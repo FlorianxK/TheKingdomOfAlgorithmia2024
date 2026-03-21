@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import *
 
-def dayTwelve():
+def dayEleven():
     d = defaultdict(list)
     #read
     with open("Day11/11_1.txt") as file:
@@ -17,7 +17,7 @@ def dayTwelve():
         state = nextState
     return len(state)
 
-def dayTwelve2():
+def dayEleven2():
     d = defaultdict(list)
     #read
     with open("Day11/11_2.txt") as file:
@@ -33,7 +33,7 @@ def dayTwelve2():
         state = nextState
     return len(state)
 
-def dayTwelve3():
+def dayEleven3():
     d = defaultdict(list)
     #read
     with open("Day11/11_3.txt") as file:
@@ -59,9 +59,9 @@ def dayTwelve3():
 
 def main():
     print("Hallo")
-    print(dayTwelve(), "ist die Lösung von Teil 1")
-    print(dayTwelve2(), "ist die Lösung von Teil 2")
-    print(dayTwelve3(), "ist die Lösung von Teil 3")
+    print(dayEleven(), "ist die Lösung von Teil 1")
+    print(dayEleven2(), "ist die Lösung von Teil 2")
+    print(dayEleven3(), "ist die Lösung von Teil 3")
 
 if __name__=="__main__":
     main()
