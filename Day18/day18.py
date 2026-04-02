@@ -1,4 +1,4 @@
-from collections import defaultdict, deque
+from collections import deque
 from typing import *
 
 def dayEighteen():
@@ -105,7 +105,7 @@ def dayEighteen3():
     arr = []
     palms = set()
     i = 0
-    with open("Day18/18.txt") as file:
+    with open("Day18/18_3.txt") as file:
         for line in file:
             arr.append( list(line.strip()) )
             for j in range(len(line)):
@@ -115,34 +115,30 @@ def dayEighteen3():
 
     m,n = len(arr),len(arr[0])
 
-    def find_optimal_start():
-        
+    def bfs_distances(start:tuple):
+        level = [start]
+        time = 0
+        seen = Counter()
+        while level:
+            nextLevel = []
+            for pos in level:
+                if pos in seen:
+                    continue
+                seen[pos] = time
+                i,j = pos
+                for di,dj in [(-1,0),(1,0),(0,-1),(0,1)]:
+                    ni,nj = i+di,j+dj
+                    if 0<=ni<m and 0 <=nj<n and arr[ni][nj] != '#' and (ni,nj) not in seen:
+                        nextLevel.append( (ni,nj) )
+            time += 1
+            level = nextLevel
+        return seen
 
-        return (2,3)
-
-    start = find_optimal_start()
-    # time,pos
-    q = deque([(0,start)])
-    seen = set()
-    seen.add(start)
-    roundPalms = palms.copy()
-
-    sumTime = 0
-    while q:
-        time,pos = q.popleft()
-        i,j = pos
-        
-        if pos in roundPalms:
-            sumTime += time
-            roundPalms.remove(pos)
-            if not roundPalms:
-                return sumTime
-        
-        for di,dj in [(-1,0),(1,0),(0,-1),(0,1)]:
-            ni,nj = i+di,j+dj
-            if 0<=ni<m and 0 <=nj<n and arr[ni][nj] != '#' and (ni,nj) not in seen:
-                seen.add( (ni,nj) )
-                q.append( (time+1,(ni,nj)) )
+    total_distances = Counter()
+    for sp in palms:
+        total_distances += bfs_distances(sp)
+    
+    return min(total_distances[c] for c in total_distances if c not in palms)
 
 def main():
     print("Hallo")
