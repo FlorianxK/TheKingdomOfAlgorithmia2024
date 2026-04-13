@@ -89,7 +89,34 @@ def dayTwelve2():
     return int(res)
 
 def dayTwelve3():
-    pass
+    meteors = []
+    #read
+    with open("Day12/12_3.txt") as file:
+        for line in file:
+            x,y = [int(v) for v in line.strip().split()]
+            meteors.append( (y,x) )
+
+    def setting(i,j):
+        if (i,j) == (3,2):
+            return "C",1
+        if j <= i:
+            return "ABC"[i-j], j
+        if i > j//2:
+            return "A",i
+        p, c = divmod(i+j,3)
+        return "ABC"[c],p
+    
+    number = {"A":1, "B":2, "C":3}
+    def score(catapult, power, is_hard=False):
+        return number[catapult]*power*(2 if is_hard else 1)
+
+    res = 0
+    for mi,mj in meteors:
+        time = (mj+1)//2
+        mi -= time
+        mj -= time
+        res += score( *setting(mi,mj) )
+    return res
 
 def main():
     print("Hallo")
