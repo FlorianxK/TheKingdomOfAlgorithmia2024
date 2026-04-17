@@ -96,122 +96,118 @@ def dayTen2():
     return total
 
 def dayTen3():
-    # vielleicht bricht zu früh ab und muss mehrmals checken ob ein arr lösbar ist? falls sich was geändert hat
     alphabet = {}
     val = 1
     for i in range(65,65+26):
         alphabet[chr(i)] = val
         val += 1
 
-    def fillArr(arr):
-        res = 0
-        rowVal = {}
-        for i,row in enumerate(arr):
-            if '*' in row:
-                continue
+    def calc(arr):
+        m,n = len(arr),len(arr[0])
 
-            x = "".join(row).replace(".","")
-            rowVal[i] = x
+        def solve_block(top,left):
+            def get(i,j):
+                return arr[top+i][left+j]
 
-        colVal = {}
-        for i,col in enumerate(zip(*arr)):
-            if '*' in col:
-                continue
+            def setv(i,j,val):
+                if arr[top+i][left+j] != val:
+                    arr[top+i][left+j] = val
+                    return True
+                return False
 
-            x = "".join(col).replace(".","")
-            colVal[i] = x
-        
-        n = len(arr)
-        for i in range(n):
-            for j in range(n):
-                if arr[i][j] == '.':
-                    row = rowVal[i]
-                    col = colVal[j]
-                    for c in row:
-                        if c == '?':
-                            continue
-                        if c in col:
-                            arr[i][j] = c
+            changed = False
+            for i in range(8):
+                row = [get(i,j) for j in range(8)]
+                if '*' in row:
+                    continue
+
+                row_str = "".join(row).replace(".","")
+                for j in range(8):
+                    if get(i,j) != '.':
+                        continue
+
+                    col = [get(x,j) for x in range(8)]
+                    if '*' in col:
+                        continue
+
+                    col_str = "".join(col).replace(".","")
+                    for c in row_str:
+                        if c != '?' and c in col_str:
+                            changed = setv(i,j,c) or changed
                             break
 
-        for i in range(n):
-            for j in range(n):
-                if arr[i][j] == '.':
+            for i in range(8):
+                for j in range(8):
+                    if get(i,j) != '.':
+                        continue
+
                     setRow = set()
                     setCol = set()
-                    for k in range(n):
-                        if arr[i][k] in setRow:
-                            setRow.remove( arr[i][k] )
-                        else:
-                            setRow.add( arr[i][k] )
-                        if arr[k][j] in setCol:
-                            setCol.remove( arr[k][j] )
-                        else:
-                            setCol.add( arr[k][j] )
-                        
-                        if arr[i][k] == '?':
-                            qm = (i,k)
-                        elif arr[k][j] == '?':
-                            qm = (k,j)
+                    qm = []
 
-                    solo = setRow^setCol
-                    if '?' in solo:
-                        solo.remove('?')
+                    for k in range(8):
+                        a = get(i,k)
+                        b = get(k,j)
+
+                        if a in setRow:
+                            setRow.remove(a)
+                        else:
+                            setRow.add(a)
+
+                        if b in setCol:
+                            setCol.remove(b)
+                        else:
+                            setCol.add(b)
+
+                        if a == '?':
+                            qm.append((i,k))
+                        if b == '?':
+                            qm.append((k,j))
+
+                    solo = setRow ^ setCol
+                    solo.discard('?')
+
                     if len(solo) == 1:
-                        # found
-                        letter = ''.join(solo)
-                        arr[i][j] = letter
-                        a,b = qm
-                        arr[a][b] = letter
+                        letter = next(iter(solo))
+                        changed = setv(i,j,letter) or changed
+                        for x,y in qm:
+                            changed = setv(x,y,letter) or changed
+            return changed
 
-        # find word
-        word = ""
-        for i in range(2,n-2):
-            for j in range(2,n-2):
-                if arr[i][j] == '.':
-                    return 0
-                word += arr[i][j]
-        print(word)
+        def get_word(top,left):
+            word = ""
+            for i in range(2,6):
+                for j in range(2,6):
+                    c = arr[top+i][left+j]
+                    if c == '.':
+                        return 0
+                    word += c
+            return sum((i+1)*alphabet[c] for i,c in enumerate(word))
+
+        changed = True
+        while changed:
+            changed = False
+            for i in range(0, m-7, 6):
+                for j in range(0, n-7, 6):
+                    if solve_block(i,j):
+                        changed = True
         res = 0
-        for i in range(len(word)):
-            res += (i+1)*alphabet[word[i]]
-
+        for i in range(0, m-7, 6):
+            for j in range(0, n-7, 6):
+                res += get_word(i,j)
         return res
 
-    res = 0
-    fullArr = []
-    nextArr = []
-    counter = 0
-    with open("Day10/10.txt") as file:
+    arr = []
+    with open("Day10/10_3.txt") as file:
         for line in file:
-            counter += 1
-            line = list(line.strip())
-            fullArr.append(line)
-            if counter >= 7:
-                nextArr.append(line)
+            arr.append(list(line.strip()))
 
-            if counter == 8:
-                counter = 2
-                # work
-                index = 0
-                while index+8 <= len(fullArr[0]):
-                    arr = []
-                    for l in fullArr:
-                        arr.append( l[index:index+8] )
-                    index += 6
-                    
-                    # FULL ARR FOUND
-                    res += fillArr(arr)
-
-                #after work
-                fullArr = nextArr
-                nextArr = []
-    return res
+    return calc(arr)
 
 def main():
     print("Hallo")
-    #print(dayTen(), "ist die Lösung von Teil 1")
-    #print(dayTen2(), "ist die Lösung von Teil 2")
+    print(dayTen(), "ist die Lösung von Teil 1")
+    print(dayTen2(), "ist die Lösung von Teil 2")
     print(dayTen3(), "ist die Lösung von Teil 3")
 
 if __name__=="__main__":
