@@ -1,4 +1,5 @@
 from typing import *
+from collections import deque
 
 def dayTwenty():
     # i,j,direction
@@ -100,13 +101,96 @@ def dayTwenty2():
     return res
 
 def dayTwenty3():
-    pass
+    with open("Day20/20_3.txt") as file:
+        lines = file.read().strip().split("\n")
+
+    arr,start = [],(0,0)
+    for y,line in enumerate(lines):
+        row = []
+        for x,c in enumerate(line):
+            if c == "#": row.append(0)
+            elif c == ".": row.append(3)
+            elif c == "S": row.append(3); start = (x, y)
+            elif c == "-": row.append(1)
+            else: row.append(2)
+        arr.append(row)
+
+    h = len(arr)
+    for _ in range(2):
+        for r in range(h):
+            arr.append(list(arr[r]))
+
+    altitude_change = {0:0, 1:-2, 2:1, 3:-1}
+    dirs = [(0,-1), (1,0), (0,1), (-1,0)]
+    m,n = len(arr),len(arr[0])
+
+    def bfs(start_x,start_alt,alt_loss):
+        q = deque()
+        # (x,y,direction,altitude)
+        q.append( (start_x,0,2,start_alt) )
+        
+        best = {}
+        max_dist = 0
+
+        while q:
+            x,y,d,alt = q.popleft()
+
+            if alt <= 0:
+                if not alt_loss[start_x][3] and y > alt_loss[start_x][2]:
+                    max_dist = max(max_dist,y)
+                    alt_loss[start_x] = (alt_loss[start_x][0],x,y,False)
+                continue
+
+            key = (x,y,d)
+            if key in best and best[key] >= alt:
+                continue
+            best[key] = alt
+
+            if y == m-1:
+                loss = start_alt-alt+1
+                if loss < alt_loss[start_x][0]:
+                    alt_loss[start_x] = (loss,x,y,True)
+                continue
+
+            for nd in [d, (d-1)%4, (d+1)%4]:
+                nx,ny = x+dirs[nd][0], y+dirs[nd][1]
+                if 0<=nx<n and 0<=ny<m and arr[ny][nx] != 0:
+                    nalt = alt+altitude_change[arr[ny][nx]]
+                    q.append( (nx,ny,nd,nalt) )
+
+        return max_dist
+
+    start_queue = [ (start[0],m+1) ]
+    visited = set()
+    alt_loss = {x:(10000,0,0,False) for x in range(n) if arr[0][x] != 0}
+
+    while start_queue:
+        x,alt = start_queue.pop()
+        if x in visited:
+            continue
+        visited.add(x)
+        bfs(x,alt,alt_loss)
+        loss,fx,_,ok = alt_loss[x]
+        if ok:
+            start_queue.append( (fx,alt) )
+
+    curr_x,curr_alt,segments = start[0],384400,0
+    while curr_alt > 0:
+        loss,fx,_,ok = alt_loss[curr_x]
+        if not ok or curr_alt <= loss:
+            break
+        curr_alt -= loss
+        curr_x = fx
+        segments += 1
+
+    final_loss = {x:(10000,0,0,False) for x in range(n) if arr[0][x] != 0}
+    return segments*m + bfs(curr_x,curr_alt,final_loss)
 
 def main():
     print("Hallo")
     print(dayTwenty(), "ist die Lösung von Teil 1")
     print(dayTwenty2(), "ist die Lösung von Teil 2")
-    #print(dayTwenty3(), "ist die Lösung von Teil 3")
+    print(dayTwenty3(), "ist die Lösung von Teil 3")
 
 if __name__=="__main__":
     main()
